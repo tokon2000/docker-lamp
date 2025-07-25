@@ -74,7 +74,16 @@ OS: <?php echo $osInfo['pretty_name']; ?><br/>
 Apache: <?php echo apache_get_version(); ?><br/>
 MySQL Version: <?php echo $db->getAttribute( PDO::ATTR_SERVER_VERSION ); ?><br/>
 PHP Version: <?php echo phpversion(); ?><br/>
-phpMyAdmin Version: <?php echo getenv('PHPMYADMIN_VERSION'); ?>
+phpMyAdmin Version: <?php echo getenv('PHPMYADMIN_VERSION'); ?><br/>
+<?php
+$iniTz      = ini_get('date.timezone') ?: 'nicht gesetzt';
+$currentTz  = date_default_timezone_get();      // effektive Zeitzone
+$now        = new DateTime('now', new DateTimeZone($currentTz));
+
+echo "<p>Serverzeit: " . $now->format('d.m.Y H:i:s') . "</p>";
+echo "<p>PHP-Konfig-Zeitzone (php.ini): {$iniTz}</p>";
+echo "<p>Aktive Zeitzone laut PHP: {$currentTz}</p>";
+?>
             </pre>
         </section>
     </div>
