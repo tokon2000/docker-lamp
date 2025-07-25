@@ -14,6 +14,15 @@ if [ -S /var/run/mysqld/mysqlx.sock ]; then
     rm -f /var/run/mysqld/mysqlx.sock
 fi
 
+# Lock-Dateien entfernen falls vorhanden
+if [ -f /var/run/mysqld/mysqld.sock.lock ]; then
+    rm -f /var/run/mysqld/mysqld.sock.lock
+fi
+
+if [ -f /var/run/mysqld/mysqlx.sock.lock ]; then
+    rm -f /var/run/mysqld/mysqlx.sock.lock
+fi
+
 # Kurze Pause um sicherzustellen, dass andere Prozesse nicht kollidieren
 sleep 2
 
