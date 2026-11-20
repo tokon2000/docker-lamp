@@ -32,10 +32,26 @@ RUN LC_ALL=C.UTF-8 add-apt-repository -y ppa:ondrej/php && \
   apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4F4EA0AAE5267A6C && \
   apt-get update && \
   apt-get -y upgrade && \
-  apt-get -y install nano postfix python3-setuptools wget git apache2 php${PHP_VERSION}-xdebug libapache2-mod-php${PHP_VERSION} mysql-server php${PHP_VERSION}-mysql pwgen php${PHP_VERSION}-apcu php${PHP_VERSION}-gd php${PHP_VERSION}-xml php${PHP_VERSION}-mbstring zip unzip php${PHP_VERSION}-zip curl php${PHP_VERSION}-curl && \
+  apt-get -y install nano postfix python3-setuptools wget git apache2 php${PHP_VERSION}-xdebug libapache2-mod-php${PHP_VERSION} mysql-server php${PHP_VERSION}-mysql pwgen php${PHP_VERSION}-apcu php${PHP_VERSION}-gd php${PHP_VERSION}-xml php${PHP_VERSION}-mbstring zip unzip php${PHP_VERSION}-zip curl php${PHP_VERSION}-curl unixodbc odbcinst php${PHP_VERSION}-odbc && \
   apt-get -y autoremove && \
   apt-get -y clean && \
   echo "ServerName localhost" >> /etc/apache2/apache2.conf
+
+# --- Actian Zen / PervasiveSQL Client (ODBC) ---
+ADD supporting_files/Zen-Client-linux-x86_64.tar.gz /usr/local/
+RUN cd /usr/local/psql/etc && \
+    ./clientpreinstall.sh && ./clientpostinstall.sh && \
+    rm -f /usr/local/psql/lib64/libstdc++.so* /usr/local/psql/lib64/libgcc_s.so* && \
+    echo "/usr/local/psql/lib64" > /etc/ld.so.conf.d/psql.conf && ldconfig && \
+    ln -sf /usr/local/psql/etc/odbc.ini /etc/odbc.ini
+
+ENV PATH="${PATH}:/usr/local/psql/bin"
+
+# DSN wird beim Containerstart aus Umgebungsvariablen erzeugt (siehe psql_dsn.sh)
+ENV PSQL_DSN=MEINEDB
+ENV PSQL_PORT=1583
+ADD supporting_files/psql_dsn.sh /psql_dsn.sh
+ADD supporting_files/start.sh /start.sh
 
 # Install supervisor 4
 RUN curl -L https://pypi.io/packages/source/s/supervisor/supervisor-${SUPERVISOR_VERSION}.tar.gz | tar xvz && \
@@ -87,4 +103,4 @@ ENV PHP_POST_MAX_SIZE 120M
 VOLUME  ["/var/lib/mysql", "/app" ]
 
 EXPOSE 80 3306
-CMD ["/run.sh"]
+CMD ["/start.sh"]
